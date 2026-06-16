@@ -1,39 +1,43 @@
 # Tutorial: Pornirea Serverului Backend
 
-Ghid complet pentru configurarea și pornirea serverului backend al aplicației Biserica Vertical Planning Center.
+Ghid complet pentru configurarea si pornirea serverului backend al aplicatiei CEAS Planning Center.
 
 ## Cuprins
 - [Prerequisite](#prerequisite)
 - [Instalare](#instalare)
-- [Configurare](#configurare)
+- [Configurare PostgreSQL](#configurare-postgresql)
 - [Pornire Server](#pornire-server)
-- [Verificare Funcționare](#verificare-functionare)
+- [Verificare Functionare](#verificare-functionare)
 - [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Prerequisite
 
-Înainte de a începe, asigură-te că ai instalate:
+Inainte de a incepe, asigura-te ca ai instalate:
 
-- **Node.js** (versiunea 16 sau mai mare)
-  - Verifică versiunea: `node --version`
-  - Descarcă de la: https://nodejs.org/
+- **Node.js** (versiunea 18 sau mai mare)
+  - Verifica versiunea: `node --version`
+  - Descarca de la: https://nodejs.org/
 
 - **npm** (vine instalat cu Node.js)
-  - Verifică versiunea: `npm --version`
+  - Verifica versiunea: `npm --version`
+
+- **PostgreSQL** (versiunea 14 sau mai mare)
+  - Verifica versiunea: `psql --version`
+  - Descarca de la: https://www.postgresql.org/download/
 
 ---
 
 ## Instalare
 
-### Pasul 1: Navighează în folderul backend
+### Pasul 1: Navigheaza in folderul backend
 
 ```bash
 cd backend
 ```
 
-### Pasul 2: Instalează dependențele
+### Pasul 2: Instaleaza dependentele
 
 ```bash
 npm install
@@ -41,104 +45,101 @@ npm install
 
 Aceasta va instala toate pachetele necesare din [package.json](package.json):
 - Express.js (framework server)
-- SQLite database (better-sqlite3)
+- PostgreSQL client (pg)
 - JWT pentru autentificare
 - CORS, Helmet pentru securitate
-- Multer pentru upload fișiere
-- și altele
+- Multer pentru upload fisiere
+- si altele
 
 ---
 
-## Configurare
+## Configurare PostgreSQL
 
-### Pasul 3: Configurează fișierul .env
+### Pasul 3: Creaza baza de date PostgreSQL
 
-1. **Verifică dacă există fișierul .env**:
+1. **Conecteaza-te la PostgreSQL**:
    ```bash
-   ls -la .env
+   sudo -u postgres psql
    ```
 
-2. **Dacă NU există**, copiază din exemplu:
-   ```bash
-   cp .env.example .env
+2. **Creaza baza de date si utilizatorul**:
+   ```sql
+   CREATE DATABASE ceas_planning;
+   CREATE USER ceas_user WITH PASSWORD 'parola_puternica';
+   GRANT ALL PRIVILEGES ON DATABASE ceas_planning TO ceas_user;
+   \q
    ```
 
-3. **Editează fișierul .env**:
-   ```bash
-   # Poți folosi orice editor text
-   nano .env
-   # sau
-   code .env
-   # sau
-   vim .env
-   ```
+### Pasul 4: Configureaza fisierul .env
 
-4. **Configurații importante în .env**:
+Creaza fisierul `.env` in folderul backend cu urmatorul continut:
 
-   ```env
-   # Portul pe care rulează serverul
-   PORT=3000
+```env
+# Server
+PORT=3000
+NODE_ENV=development
 
-   # Modul de rulare (development/production)
-   NODE_ENV=development
+# PostgreSQL Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=ceas_planning
+DB_USER=ceas_user
+DB_PASSWORD=parola_puternica
 
-   # IMPORTANT: Generează un secret puternic pentru JWT
-   JWT_SECRET=your_super_secret_key_here_generate_with_openssl
-   JWT_EXPIRES_IN=7d
+# IMPORTANT: Genereaza un secret puternic pentru JWT
+JWT_SECRET=your_super_secret_jwt_key_here
 
-   # Calea către baza de date SQLite
-   DATABASE_PATH=./database.db
+# CORS - originile permise
+CORS_ORIGIN=http://localhost:5173,http://localhost:5174
 
-   # Setări pentru upload fișiere
-   UPLOADS_PATH=../public/assets/uploads
-   MAX_FILE_SIZE=10485760
+# Email Configuration (optional)
+EMAIL_HOST=smtp.example.com
+EMAIL_PORT=465
+EMAIL_SECURE=true
+EMAIL_USER=contact@example.com
+EMAIL_PASSWORD=your_email_password
+EMAIL_FROM=CEAS Planning Center
 
-   # CORS - originile permise
-   CORS_ORIGIN=http://localhost:5173,http://localhost:3000
-   ```
-
-5. **Generează un JWT_SECRET puternic** (recomandat):
-   ```bash
-   openssl rand -base64 64
-   ```
-
-   Copiază rezultatul și înlocuiește valoarea `JWT_SECRET` din .env
-
-### Pasul 4: Inițializează baza de date (opțional)
-
-Dacă vrei să resetezi baza de date sau să o creezi prima dată:
-
-```bash
-# Inițializează structura bazei de date
-npm run db:init
-
-# Populează cu date de test (opțional)
-npm run db:seed
-
-# Importă toate cele 99 de melodii din Planning Center
-npm run db:import-songs
+# Frontend URL (pentru link-uri in emailuri)
+FRONTEND_URL=http://localhost:5174
 ```
 
-**Important:** Asigură-te că rulezi `npm run db:seed` înainte de a importa melodiile, pentru că scriptul de import necesită un utilizator admin existent.
+**Genereaza un JWT_SECRET puternic** (recomandat):
+```bash
+openssl rand -base64 64
+```
+
+### Pasul 5: Initializeaza baza de date
+
+```bash
+# Creaza tabelele in PostgreSQL
+npm run db:init
+
+# Populeaza cu date de test (optional)
+npm run db:seed
+
+# Importa melodiile (optional)
+npm run db:import-songs
+```
 
 ---
 
 ## Pornire Server
 
-Ai două opțiuni pentru a porni serverul:
+Ai doua optiuni pentru a porni serverul:
 
-### Opțiunea 1: Mod Development (recomandat pentru dezvoltare)
+### Optiunea 1: Mod Development (recomandat pentru dezvoltare)
 
 ```bash
 npm run dev
 ```
 
 **Avantaje:**
-- Auto-restart când modifici fișiere
+- Auto-restart cand modifici fisiere
 - Perfect pentru development
-- Folosește `nodemon`
+- Foloseste `nodemon`
 
-### Opțiunea 2: Mod Production
+### Optiunea 2: Mod Production
 
 ```bash
 npm start
@@ -146,20 +147,23 @@ npm start
 
 **Avantaje:**
 - Rulare standard cu Node.js
-- Fără auto-restart
-- Pentru producție
+- Fara auto-restart
+- Pentru productie
 
 ---
 
-## Verificare Funcționare
+## Verificare Functionare
 
-### 1. Verifică output-ul în terminal
+### 1. Verifica output-ul in terminal
 
-După pornire, ar trebui să vezi:
+Dupa pornire, ar trebui sa vezi:
 
 ```
-🚀 Planning Center Backend
-==========================
+📂 Connecting to PostgreSQL database...
+✅ Connected to PostgreSQL database
+
+🚀 CEAS Planning Center Backend
+================================
 ✅ Server running on http://localhost:3000
 📊 Environment: development
 🔐 JWT Secret: Configured
@@ -174,44 +178,44 @@ După pornire, ar trebui să vezi:
 🔗 API Documentation: http://localhost:3000/api/health
 ```
 
-### 2. Testează endpoint-ul de health check
+### 2. Testeaza endpoint-ul de health check
 
-Deschide browser-ul sau folosește curl:
+Deschide browser-ul sau foloseste curl:
 
 ```bash
 curl http://localhost:3000/api/health
 ```
 
-Răspuns așteptat:
+Raspuns asteptat:
 ```json
 {
   "status": "ok",
-  "timestamp": "2025-10-20T...",
+  "timestamp": "2026-01-22T...",
   "environment": "development"
 }
 ```
 
-### 3. Testează în browser
+### 3. Testeaza in browser
 
-Vizitează: http://localhost:3000/api/health
+Viziteaza: http://localhost:3000/api/health
 
 ---
 
 ## Troubleshooting
 
-### Problema 1: Port deja în uz
+### Problema 1: Port deja in uz
 
 **Eroare:**
 ```
 Error: listen EADDRINUSE: address already in use :::3000
 ```
 
-**Soluție:**
-1. Schimbă portul în .env:
+**Solutie:**
+1. Schimba portul in .env:
    ```env
    PORT=3001
    ```
-2. SAU oprește procesul care folosește portul 3000:
+2. SAU opreste procesul care foloseste portul 3000:
    ```bash
    # Pe macOS/Linux
    lsof -ti:3000 | xargs kill
@@ -228,62 +232,69 @@ Error: listen EADDRINUSE: address already in use :::3000
 Error: Cannot find module 'express'
 ```
 
-**Soluție:**
+**Solutie:**
 ```bash
-# Șterge node_modules și reinstalează
+# Sterge node_modules si reinstaleaza
 rm -rf node_modules package-lock.json
 npm install
 ```
 
-### Problema 3: JWT_SECRET not set
+### Problema 3: PostgreSQL connection refused
 
 **Eroare:**
 ```
-🔐 JWT Secret: NOT SET!
+Error: connect ECONNREFUSED 127.0.0.1:5432
 ```
 
-**Soluție:**
-1. Verifică că fișierul .env există
-2. Verifică că JWT_SECRET este setat în .env
-3. Nu lăsa valoarea default din .env.example
+**Solutie:**
+1. Verifica ca PostgreSQL ruleaza:
+   ```bash
+   sudo systemctl status postgresql
+   ```
+2. Porneste PostgreSQL daca nu ruleaza:
+   ```bash
+   sudo systemctl start postgresql
+   ```
 
-### Problema 4: Database error
+### Problema 4: Authentication failed
 
 **Eroare:**
 ```
-Error: SQLITE_CANTOPEN: unable to open database file
+Error: password authentication failed for user
 ```
 
-**Soluție:**
-```bash
-# Inițializează din nou baza de date
-npm run db:init
-```
+**Solutie:**
+1. Verifica credentialele din .env
+2. Verifica configurarea pg_hba.conf
+3. Reseteaza parola utilizatorului PostgreSQL:
+   ```sql
+   ALTER USER ceas_user WITH PASSWORD 'noua_parola';
+   ```
 
-### Problema 5: CORS errors în frontend
+### Problema 5: CORS errors in frontend
 
-**Eroare în browser:**
+**Eroare in browser:**
 ```
 Access to XMLHttpRequest blocked by CORS policy
 ```
 
-**Soluție:**
-Verifică CORS_ORIGIN în .env să includă URL-ul frontend-ului:
+**Solutie:**
+Verifica CORS_ORIGIN in .env sa includa URL-ul frontend-ului:
 ```env
-CORS_ORIGIN=http://localhost:5173,http://localhost:3000
+CORS_ORIGIN=http://localhost:5173,http://localhost:5174
 ```
 
 ---
 
 ## Comenzi Utile
 
-| Comandă | Descriere |
+| Comanda | Descriere |
 |---------|-----------|
-| `npm start` | Pornește serverul în mod production |
-| `npm run dev` | Pornește serverul în mod development cu nodemon |
-| `npm run db:init` | Inițializează structura bazei de date |
-| `npm run db:seed` | Populează baza de date cu date de test |
-| `npm run db:import-songs` | Importă 99 melodii din Planning Center |
+| `npm start` | Porneste serverul in mod production |
+| `npm run dev` | Porneste serverul in mod development cu nodemon |
+| `npm run db:init` | Initializeaza structura bazei de date PostgreSQL |
+| `npm run db:seed` | Populeaza baza de date cu date de test |
+| `npm run db:import-songs` | Importa melodiile |
 
 ---
 
@@ -291,17 +302,15 @@ CORS_ORIGIN=http://localhost:5173,http://localhost:3000
 
 ```
 backend/
-├── config/          # Configurații (database, etc)
+├── config/          # Configuratii (database PostgreSQL)
 ├── controllers/     # Logica business
 ├── cron/           # Task-uri programate
 ├── middleware/     # Middleware Express
 ├── routes/         # Definirea rutelor API
 ├── scripts/        # Scripturi pentru DB
-├── utils/          # Funcții helper
+├── utils/          # Functii helper
 ├── .env            # Configurare (NU commita!)
-├── .env.example    # Template pentru .env
-├── server.js       # Entry point
-└── database.db     # Baza de date SQLite
+└── server.js       # Entry point
 ```
 
 ---
@@ -318,20 +327,20 @@ backend/
 - `PUT /api/services/:id` - Update serviciu
 
 ### Voting
-- `POST /api/votes` - Votează pentru disponibilitate
+- `POST /api/votes` - Voteaza pentru disponibilitate
 - `GET /api/votes` - Voturi utilizator
 
-### Notificări
-- `GET /api/notifications` - Lista notificări
-- `PUT /api/notifications/:id` - Marchează ca citită
+### Notificari
+- `GET /api/notifications` - Lista notificari
+- `PUT /api/notifications/:id` - Marcheaza ca citita
 
 ### Utilizatori
 - `GET /api/users` - Lista utilizatori
 - `POST /api/users` - Creare utilizator nou
 
-### Cântări
-- `GET /api/songs` - Lista cântări
-- `POST /api/songs` - Adaugă cântare nouă
+### Cantari
+- `GET /api/songs` - Lista cantari
+- `POST /api/songs` - Adauga cantare noua
 
 ---
 
@@ -339,20 +348,11 @@ backend/
 
 Serverul include:
 - 🔒 **Helmet** - Security headers
-- 🔑 **JWT** - Autentificare securizată
+- 🔑 **JWT** - Autentificare securizata
 - 🛡️ **CORS** - Cross-Origin protection
-- 📊 **Rate limiting** - Protecție împotriva spam
+- 📊 **Rate limiting** - Protectie impotriva spam
 - ✅ **Input validation** - Validare date
 - 🔐 **Bcrypt** - Hash-uire parole
-
----
-
-## Suport
-
-Pentru probleme sau întrebări:
-1. Verifică secțiunea [Troubleshooting](#troubleshooting)
-2. Consultă [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
-3. Verifică logs-urile în terminal
 
 ---
 

@@ -6,21 +6,27 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 // All routes require authentication
 router.use(authenticateToken);
 
-// Get all users (admin_global only)
-router.get('/', requireRole(['admin_global']), usersController.getAllUsers);
-router.get('/:id', usersController.getUserById);
+// IMPORTANT: Specific routes BEFORE parameterized routes!
 
-// Create user (admin_global only)
-router.post('/', requireRole(['admin_global']), usersController.createUser);
-
-// Update user (admin_global only)
-router.put('/:id', requireRole(['admin_global']), usersController.updateUser);
-
-// Assign roles (admin_global only)
-router.post('/:id/roles', requireRole(['admin_global']), usersController.assignRoles);
-
-// Get all roles
+// Get all roles (must be before /:id)
 router.get('/roles/all', usersController.getAllRoles);
 
-module.exports = router;
+// Get all users (admin_global or super_admin only)
+router.get('/', requireRole(['admin_global', 'super_admin']), usersController.getAllUsers);
 
+// Create user (admin_global or super_admin only)
+router.post('/', requireRole(['admin_global', 'super_admin']), usersController.createUser);
+
+// Routes with :id parameter (after specific routes)
+router.get('/:id', usersController.getUserById);
+
+// Update user (admin_global or super_admin only)
+router.put('/:id', requireRole(['admin_global', 'super_admin']), usersController.updateUser);
+
+// Assign roles (admin_global or super_admin only)
+router.post('/:id/roles', requireRole(['admin_global', 'super_admin']), usersController.assignRoles);
+
+// Delete user (admin_global or super_admin only)
+router.delete('/:id', requireRole(['admin_global', 'super_admin']), usersController.deleteUser);
+
+module.exports = router;

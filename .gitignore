@@ -1,9 +1,8 @@
-# Environment Variables
-.env
-.env.local
-.env.*.local
-backend/.env
-backend/.env.local
+# Environment Variables (never commit secrets)
+.env*
+!.env.example
+backend/.env*
+!backend/.env.example
 
 # Dependencies
 node_modules/
@@ -13,22 +12,46 @@ biserica-vertical-react/node_modules/
 # Build outputs
 backend/dist/
 biserica-vertical-react/dist/
+biserica-vertical-react/dist-ssr/
+biserica-vertical-react/frontend-production/
 biserica-vertical-react/build/
+frontend/dist/
+frontend/build/
 
-# Database
-backend/database.db
+# Database (SQLite legacy + sidecar files)
+backend/database.db*
 backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+*.db-shm
+*.db-wal
+
+# Syncthing / sync-tool conflict copies
+*.sync-conflict-*
+
+# Local archives & deploy bundles
+*.zip
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 backend/logs/
+
+# Runtime uploads (user-generated files)
+backend/uploads/
+backend/public/assets/uploads/
+public/assets/uploads/
+
+# Test coverage
+coverage/
 
 # OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # IDE
 .vscode/
@@ -37,10 +60,9 @@ Thumbs.db
 *.swo
 *~
 
-# Uploads
-backend/public/assets/uploads/
-public/assets/uploads/
-
-# Temporary files
+# Temporary / backup files
 *.tmp
 *.bak
+
+# Local AI / tooling
+.claude/

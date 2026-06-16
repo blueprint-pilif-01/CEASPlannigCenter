@@ -193,7 +193,7 @@ function generateServiceDates() {
         title: 'Serviciu Biserică',
         date: current.toISOString().split('T')[0],
         time: '10:00',
-        location: 'Biserica Vertical'
+        location: 'CEAS'
       });
     }
     
