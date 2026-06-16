@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="/logo.jpeg" />
+    <link rel="apple-touch-icon" href="/logo.jpeg" />
+
+    <!-- Primary Meta Tags -->
+    <title>CEAS Planning Center</title>
+    <meta name="title" content="Planning Center - Sistem de Planificare" />
+    <meta name="description" content="Sistem de planificare și management pentru echipe de voluntari. Gestionare servicii, melodii, asignări și disponibilitate." />
+    <meta name="author" content="Planning Center" />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <!-- Cache Control - Force refresh -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="version" content="3.0.0-20251231" />
+
+    <!-- Force reload script -->
+    <script>
+      // Clear all caches and force reload if version mismatch
+      (function() {
+        const CURRENT_VERSION = '3.0.0-20251231';
+        const storedVersion = localStorage.getItem('app_version');
+
+        if (storedVersion !== CURRENT_VERSION) {
+          console.log('[Cache Buster] Version mismatch, clearing all caches...');
+
+          // Clear localStorage except auth
+          const authToken = localStorage.getItem('token');
+          const authUser = localStorage.getItem('user');
+          localStorage.clear();
+          if (authToken) localStorage.setItem('token', authToken);
+          if (authUser) localStorage.setItem('user', authUser);
+
+          // Clear sessionStorage
+          sessionStorage.clear();
+
+          // Unregister all service workers
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for(let registration of registrations) {
+                registration.unregister();
+              }
+            });
+          }
+
+          // Clear all caches
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              for (let name of names) {
+                caches.delete(name);
+              }
+            });
+          }
+
+          // Store new version
+          localStorage.setItem('app_version', CURRENT_VERSION);
+
+          // Force hard reload
+          console.log('[Cache Buster] Reloading...');
+          setTimeout(function() {
+            window.location.reload(true);
+          }, 500);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
